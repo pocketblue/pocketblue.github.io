@@ -1,0 +1,45 @@
+on:
+  push: {}
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    permissions:
+      pages: write
+      id-token: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: dawidd6/action-download-artifact@v11
+        with:
+          github_token: ${{ secrets.TOKEN }}
+          repo: pocketblue/flatpaks
+          branch: main
+          name: merged-flatpaks
+          path: site
+          workflow_search: true
+
+      - uses: dawidd6/action-download-artifact@v11
+        with:
+          github_token: ${{ secrets.TOKEN }}
+          repo: pocketblue/wiki
+          branch: main
+          name: wiki
+          path: site
+          workflow_search: true
+
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: site
+
+      - uses: actions/deploy-pages@v4
+        with:
+          token: ${{ secrets.TOKEN }}
